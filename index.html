@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スタイリッシュ時計</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        p {
+            font-size: 2em;
+            margin: 10px 0;
+            color: #34495e;
+            transition: color 0.3s ease-in-out;
+        }
+
+        p#time {
+            font-size: 2.5em;
+            color: #e74c3c; /* Accent color for time */
+        }
+
+        p#countdown {
+            font-size: 1.5em;
+            color: #95a5a6;
+        }
+
+        #progress-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 15px;
+            margin-top: 30px;
+            overflow: hidden;
+            box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #progress-bar {
+            height: 35px;
+            background-color: #5cb85c;
+            border-radius: 15px;
+            width: 0%;
+            text-align: center;
+            line-height: 35px;
+            color: white;
+            font-size: 0.9em;
+            transition: width 0.1s linear; /* より細かく変化が見えるように */
+            box-sizing: border-box;
+            padding: 0 10px;
+            white-space: nowrap; /* テキストが改行しないように */
+            overflow: hidden;       /* テキストがはみ出さないように */
+        }
+
+        #progress-text {
+            font-size: 1.1em;
+            margin-top: 10px;
+            color: #777;
+        }
+
+        /* デバッグ画面用スタイル */
+        #debug-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: none; /* 初期状態では非表示 */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #debug-content {
+            background-color: #333;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: left;
+            overflow-y: auto;
+            max-height: 80%;
+            width: 80%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        #debug-content p {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: #eee;
+        }
+
+        #debug-settings {
+            margin-top: 20px;
+            border-top: 1px solid #555;
+            padding-top: 20px;
+        }
+
+        #debug-settings h2 {
+            color: #eee;
+            margin-bottom: 15px;
+        }
+
+        #debug-settings label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        #debug-settings input[type="password"] {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            width: calc(100% - 16px);
+        }
+
+        #debug-settings button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>現在の時刻と日付</h1>
+        <p id="date"></p>
+        <p id="time"></p>
+        <p id="countdown"></p>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <p id="progress-text"></p>
+    </div>
+
+    <div id="debug-overlay">
+        <div id="debug-content">
+            <h2>デバッグ情報</h2>
+            <p><strong>現在日時 (詳細):</strong> <span id="debug-now"></span></p>
+            <p><strong>表示されている日付:</strong> <span id="debug-date"></span></p>
+            <p><strong>表示されている時刻:</strong> <span id="debug-time"></span></p>
+            <p><strong>カウントダウン:</strong> <span id="debug-countdown"></span></p>
+            <p><strong>進捗:</strong> <span id="debug-progress"></span></p>
+
+            <div id="debug-settings">
+                <h2>システム設定 (パスワード保護)</h2>
+                <label for="debug-password">パスワード設定:</label>
+                <input type="password" id="debug-password" placeholder="パスワードを入力">
+                <button onclick="savePassword()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isDebugMode = false;
+        const debugOverlay = document.getElementById('debug-overlay');
+        const debugNow = document.getElementById('debug-now');
+        const debugDate = document.getElementById('debug-date');
+        const debugTime = document.getElementById('debug-time');
+        const debugCountdown = document.getElementById('debug-countdown');
+        const debugProgress = document.getElementById('debug-progress');
+        const passwordInput = document.getElementById('debug-password');
+        const PASSWORD_KEY = 'debugPassword';
+
+        // 保存されたパスワードを読み込む
+        let savedPassword = localStorage.getItem(PASSWORD_KEY);
+
+        function showTime() {
+            var currentTime = new Date();
+            var year = currentTime.getFullYear();
+            var month = String(currentTime.getMonth() + 1).padStart(2, '0');
+            var day = String(currentTime.getDate()).padStart(2, '0');
+            var weekday = ['日', '月', '火', '水', '木', '金', '土'][currentTime.getDay()];
+            var hours = currentTime.getHours();
+            var minutes = String(currentTime.getMinutes()).padStart(2, '0');
+            var seconds = String(currentTime.getSeconds()).padStart(2, '0');
+            var milliseconds = String(currentTime.getMilliseconds()).padStart(3, '0'); // ミリ秒を取得
+            var ampm = hours >= 12 ? '午後' : '午前';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+
+            var dateString = year + '年' + month + '月' + day + '日' + '(' + weekday + ')';
+            var timeString = ampm + ' ' + hours + '時' + minutes + '分' + seconds + '秒';
+
+            document.getElementById('date').textContent = dateString;
+            document.getElementById('time').textContent = timeString;
+
+            var currentYear = currentTime.getFullYear();
+            var nextYear = new Date(currentYear + 1, 0, 1);
+            var diff = nextYear - currentTime;
+
+            if (diff < 0) {
+                document.getElementById('countdown').textContent = '';
+                document.getElementById('time').textContent = currentYear + '年になりました。';
+                document.getElementById('progress-bar').style.width = '100%';
+                document.getElementById('progress-bar').textContent = '100.00%';
+                document.getElementById('progress-text').textContent = '100.00%';
+            } else {
+                var totalYearSeconds = new Date(currentYear, 11, 31, 23, 59, 59, 999) - new Date(currentYear, 0, 1, 0, 0, 0, 0);
+                var elapsedSeconds = currentTime - new Date(currentYear, 0, 1, 0, 0, 0, 0);
+                var progressPercentage = Math.min(100, (elapsedSeconds / totalYearSeconds) * 100);
+
+                var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                var countdownString = days + '日' + hours + '時間' + minutes + '分' + seconds + '秒';
+                document.getElementById('countdown').textContent = '次の年まであと ' + countdownString;
+                document.getElementById('progress-bar').style.width = progressPercentage.toFixed(2) + '%';
+                document.getElementById('progress-bar').textContent = progressPercentage.toFixed(2) + '%';
+                document.getElementById('progress-text').textContent = '今年の ' + progressPercentage.toFixed(2) + '% が経過';
+            }
+
+            // デバッグモードが有効な場合に情報を更新
+            if (isDebugMode) {
+                updateDebugInfo();
+            }
+        }
+
+        function updateDebugInfo() {
+            const now = new Date();
+            debugNow.textContent = now.toISOString();
+            debugDate.textContent = document.getElementById('date').textContent;
+            debugTime.textContent = document.getElementById('time').textContent;
+            debugCountdown.textContent = document.getElementById('countdown').textContent;
+            debugProgress.textContent = document.getElementById('progress-text').textContent;
+        }
+
+        function toggleDebugMode() {
+            if (isDebugMode) {
+                debugOverlay.style.display = 'none';
+                isDebugMode = false;
+            } else {
+                // パスワードが設定されている場合は入力を求める
+                if (savedPassword) {
+                    const inputPassword = prompt("デバッグ画面を開くためのパスワードを入力してください:");
+                    if (inputPassword && btoa(inputPassword) === savedPassword) {
+                        debugOverlay.style.display = 'flex';
+                        updateDebugInfo();
+                        isDebugMode = true;
+                    } else {
+                        alert("パスワードが間違っています。");
+                    }
+                } else {
+                    debugOverlay.style.display = 'flex';
+                    updateDebugInfo();
+                    isDebugMode = true;
+                }
+            }
+        }
+
+        function savePassword() {
+            const password = passwordInput.value;
+            if (password) {
+                // パスワードをBase64でエンコードして保存（簡単な暗号化）
+                localStorage.setItem(PASSWORD_KEY, btoa(password));
+                savedPassword = localStorage.getItem(PASSWORD_KEY);
+                alert("パスワードを保存しました。");
+                passwordInput.value = ''; // 入力フィールドをクリア
+            } else {
+                alert("パスワードを入力してください。");
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                toggleDebugMode();
+            }
+        });
+
+        setInterval(showTime, 10); // 10ミリ秒ごとに更新 (より細かく)
+    </script>
+</body>
+</html>
