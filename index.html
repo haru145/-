@@ -30,6 +30,7 @@
             max-width: 600px;
             width: 100%;
             box-sizing: border-box; /* paddingを含めてwidthを計算 */
+            position: relative; /* ボタンの配置の基準 */
         }
 
         h1 {
@@ -156,6 +157,25 @@
             cursor: pointer;
         }
 
+        /* 管理画面ログインボタン */
+        #admin-login-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        #admin-login-button:hover {
+            background-color: #d68910;
+        }
+
         /* モバイル版対応 */
         @media screen and (max-width: 768px) {
             body {
@@ -221,6 +241,16 @@
                 font-size: 0.9em; /* 入力欄とボタンのフォントサイズを小さく */
                 padding: 6px 10px;
             }
+
+            /* モバイル版での管理画面ログインボタン */
+            #admin-login-button {
+                position: fixed; /* 固定配置に変更 */
+                top: auto;
+                bottom: 10px;
+                right: 10px;
+                font-size: 0.8em;
+                padding: 8px 12px;
+            }
         }
     </style>
 </head>
@@ -234,6 +264,7 @@
             <div id="progress-bar"></div>
         </div>
         <p id="progress-text"></p>
+        <button id="admin-login-button">管理画面ログイン</button>
     </div>
 
     <div id="debug-overlay">
@@ -264,9 +295,22 @@
         const debugProgress = document.getElementById('debug-progress');
         const passwordInput = document.getElementById('debug-password');
         const PASSWORD_KEY = 'debugPassword';
+        const ADMIN_PASSWORD_KEY = 'adminPassword'; // 管理画面用パスワードのキー
 
         // 保存されたパスワードを読み込む
         let savedPassword = localStorage.getItem(PASSWORD_KEY);
+        let savedAdminPassword = localStorage.getItem(ADMIN_PASSWORD_KEY);
+
+        // 管理画面ログインボタンの処理
+        document.getElementById('admin-login-button').addEventListener('click', function() {
+            const adminPassword = prompt("管理画面のパスワードを入力してください:");
+            if (adminPassword && btoa(adminPassword) === savedAdminPassword) {
+                alert("管理画面にログインしました！");
+                // ここに管理画面への遷移処理などを記述
+            } else if (adminPassword !== null) {
+                alert("パスワードが間違っています。");
+            }
+        });
 
         function showTime() {
             var currentTime = new Date();
@@ -359,7 +403,7 @@
                 // パスワードをBase64でエンコードして保存（簡単な暗号化）
                 localStorage.setItem(PASSWORD_KEY, btoa(password));
                 savedPassword = localStorage.getItem(PASSWORD_KEY);
-                alert("パスワードを保存しました。");
+                alert("デバッグ画面用パスワードを保存しました。");
                 passwordInput.value = ''; // 入力フィールドをクリア
             } else {
                 alert("パスワードを入力してください。");
@@ -373,6 +417,18 @@
         });
 
         setInterval(showTime, 10); // 10ミリ秒ごとに更新 (より細かく)
+
+        // 初期設定: 管理画面用パスワードが未設定の場合は設定を促す
+        if (!savedAdminPassword) {
+            const initialAdminPassword = prompt("管理画面の初期パスワードを設定してください:");
+            if (initialAdminPassword) {
+                localStorage.setItem(ADMIN_PASSWORD_KEY, btoa(initialAdminPassword));
+                savedAdminPassword = localStorage.getItem(ADMIN_PASSWORD_KEY);
+                alert("管理画面のパスワードを設定しました。");
+            } else {
+                alert("管理画面のパスワード設定がキャンセルされました。");
+            }
+        }
     </script>
 </body>
 </html>
