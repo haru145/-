@@ -1,3 +1,4 @@
+--- START OF FILE 時計.html ---
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -29,6 +30,7 @@
             text-align: center;
             max-width: 600px;
             width: 100%;
+            box-sizing: border-box; /* paddingを含めてwidthを計算 */
         }
 
         h1 {
@@ -109,6 +111,7 @@
             max-height: 80%;
             width: 80%;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box; /* paddingを含めてwidthを計算 */
         }
 
         #debug-content p {
@@ -142,6 +145,7 @@
             margin-bottom: 10px;
             border-radius: 5px;
             width: calc(100% - 16px);
+            box-sizing: border-box; /* paddingを含めてwidthを計算 */
         }
 
         #debug-settings button {
@@ -151,6 +155,73 @@
             padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        /* モバイル版対応 */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px; /* 全体のパディングを小さく */
+            }
+
+            .container {
+                padding: 20px; /* コンテナのパディングを小さく */
+                border-radius: 10px; /* 角の丸みを少し小さく */
+            }
+
+            h1 {
+                font-size: 2em; /* 見出しのフォントサイズを少し小さく */
+                margin-bottom: 15px;
+            }
+
+            p {
+                font-size: 1.5em; /* 段落のフォントサイズを少し小さく */
+                margin: 8px 0;
+            }
+
+            p#time {
+                font-size: 2em; /* 時刻のフォントサイズを少し小さく */
+            }
+
+            p#countdown {
+                font-size: 1.2em; /* カウントダウンのフォントサイズをさらに小さく */
+            }
+
+            #progress-bar {
+                height: 30px; /* プログレスバーの高さを少し小さく */
+                line-height: 30px;
+                font-size: 0.8em;
+            }
+
+            #progress-text {
+                font-size: 1em; /* 進捗テキストのフォントサイズを少し小さく */
+            }
+
+            #debug-content {
+                padding: 20px; /* デバッグコンテンツのパディングを小さく */
+            }
+
+            #debug-content p {
+                font-size: 1em; /* デバッグ情報のフォントサイズを小さく */
+            }
+
+            #debug-settings {
+                padding-top: 15px;
+            }
+
+            #debug-settings h2 {
+                font-size: 1.2em; /* デバッグ設定の見出しを小さく */
+                margin-bottom: 10px;
+            }
+
+            #debug-settings label {
+                font-size: 0.9em; /* ラベルのフォントサイズを小さく */
+            }
+
+            #debug-settings input[type="password"],
+            #debug-settings button {
+                font-size: 0.9em; /* 入力欄とボタンのフォントサイズを小さく */
+                padding: 6px 10px;
+            }
         }
     </style>
 </head>
