@@ -296,6 +296,7 @@
         const passwordInput = document.getElementById('debug-password');
         const PASSWORD_KEY = 'debugPassword';
         const ADMIN_PASSWORD_KEY = 'adminPassword'; // 管理画面用パスワードのキー
+        const INITIAL_ADMIN_PASSWORD = '33125016'; // 初期管理画面パスワード
 
         // 保存されたパスワードを読み込む
         let savedPassword = localStorage.getItem(PASSWORD_KEY);
@@ -418,16 +419,11 @@
 
         setInterval(showTime, 10); // 10ミリ秒ごとに更新 (より細かく)
 
-        // 初期設定: 管理画面用パスワードが未設定の場合は設定を促す
+        // 初期設定: 管理画面用パスワードが未設定の場合は設定
         if (!savedAdminPassword) {
-            const initialAdminPassword = prompt("管理画面の初期パスワードを設定してください:");
-            if (initialAdminPassword) {
-                localStorage.setItem(ADMIN_PASSWORD_KEY, btoa(initialAdminPassword));
-                savedAdminPassword = localStorage.getItem(ADMIN_PASSWORD_KEY);
-                alert("管理画面のパスワードを設定しました。");
-            } else {
-                alert("管理画面のパスワード設定がキャンセルされました。");
-            }
+            localStorage.setItem(ADMIN_PASSWORD_KEY, btoa(INITIAL_ADMIN_PASSWORD));
+            savedAdminPassword = localStorage.getItem(ADMIN_PASSWORD_KEY);
+            console.log("管理画面の初期パスワードを設定しました: 33125016"); // 確認用
         }
     </script>
 </body>
