@@ -176,6 +176,67 @@
             background-color: #d68910;
         }
 
+        /* 管理画面 */
+        #admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+        }
+
+        #admin-panel-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: left;
+            max-width: 600px;
+            width: 90%;
+            box-sizing: border-box;
+        }
+
+        #admin-panel h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .admin-form-group {
+            margin-bottom: 15px;
+        }
+
+        .admin-form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .admin-form-group input[type="color"],
+        .admin-form-group select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: calc(100% - 16px);
+            box-sizing: border-box;
+        }
+
+        #admin-panel-buttons button {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: none;
+            background-color: #5cb85c;
+            color: white;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        #admin-panel-buttons button.cancel-button {
+            background-color: #ccc;
+        }
+
         /* 管理画面ログインフォーム */
         #admin-login-form {
             display: none;
@@ -303,6 +364,11 @@
             #admin-login-form input[type="password"] {
                 width: 150px;
             }
+
+             /* モバイル版での管理画面 */
+            #admin-panel-content {
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -347,6 +413,43 @@
         </div>
     </div>
 
+    <div id="admin-panel">
+        <div id="admin-panel-content">
+            <h2>管理設定</h2>
+            <div class="admin-form-group">
+                <label for="clock-visibility">時計の表示/非表示</label>
+                <select id="clock-visibility">
+                    <option value="visible">表示</option>
+                    <option value="hidden">非表示</option>
+                </select>
+            </div>
+
+            <div class="admin-form-group">
+                <label for="countdown-visibility">カウントダウンの表示/非表示</label>
+                <select id="countdown-visibility">
+                    <option value="visible">表示</option>
+                    <option value="hidden">非表示</option>
+                </select>
+            </div>
+
+            <div class="admin-form-group">
+                <label for="background-color">背景色の変更</label>
+                <input type="color" id="background-color" value="#f4f7f6">
+            </div>
+
+            <div class="admin-form-group">
+                <label for="text-color">文字色の変更</label>
+                <input type="color" id="text-color" value="#333333">
+            </div>
+
+            <div id="admin-panel-buttons">
+                <button onclick="applyChanges()">変更を適用</button>
+                <button class="cancel-button" onclick="hideAdminPanel()">閉じる</button>
+                <button onclick="logout()">ログアウト</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let isDebugMode = false;
         const debugOverlay = document.getElementById('debug-overlay');
@@ -361,10 +464,21 @@
         const INITIAL_ADMIN_PASSWORD = '33125016'; // 初期管理画面パスワード
         const adminLoginForm = document.getElementById('admin-login-form');
         const adminPasswordInput = document.getElementById('admin-password-input');
+        const adminPanel = document.getElementById('admin-panel');
+        const clockVisibilitySelect = document.getElementById('clock-visibility');
+        const countdownVisibilitySelect = document.getElementById('countdown-visibility');
+        const backgroundColorInput = document.getElementById('background-color');
+        const textColorInput = document.getElementById('text-color');
 
         // 保存されたパスワードを読み込む
         let savedPassword = localStorage.getItem(PASSWORD_KEY);
         let savedAdminPassword = localStorage.getItem(ADMIN_PASSWORD_KEY);
+        let isAdminLoggedIn = sessionStorage.getItem('isAdminLoggedIn') === 'true';
+
+        // 初期表示設定
+        if (isAdminLoggedIn) {
+            document.getElementById('admin-login-button').style.display = 'none';
+        }
 
         // 管理画面ログインボタンの処理
         document.getElementById('admin-login-button').addEventListener('click', function() {
@@ -380,17 +494,54 @@
             adminPasswordInput.value = ''; // 入力フィールドをクリア
         }
 
+        function showAdminPanel() {
+            adminPanel.style.display = 'flex';
+            // 現在の設定値を管理画面に反映
+            clockVisibilitySelect.value = document.getElementById('time').style.display === 'none' ? 'hidden' : 'visible';
+            countdownVisibilitySelect.value = document.getElementById('countdown').style.display === 'none' ? 'hidden' : 'visible';
+            backgroundColorInput.value = document.body.style.backgroundColor;
+            textColorInput.value = document.body.style.color;
+        }
+
+        function hideAdminPanel() {
+            adminPanel.style.display = 'none';
+        }
+
         function loginAdmin() {
             const adminPassword = adminPasswordInput.value;
             if (adminPassword && btoa(adminPassword) === savedAdminPassword) {
-                alert("管理画面にログインしました！");
-                // 管理画面への遷移
-                window.location.href = '/admin'; // 実際の管理画面のURLに置き換えてください
+                sessionStorage.setItem('isAdminLoggedIn', 'true');
+                isAdminLoggedIn = true;
+                hideAdminLoginForm();
+                document.getElementById('admin-login-button').style.display = 'none';
+                showAdminPanel();
             } else if (adminPassword) {
                 alert("パスワードが間違っています。");
             } else {
                 alert("パスワードを入力してください。");
             }
+        }
+
+        function applyChanges() {
+            const clockVisibility = clockVisibilitySelect.value;
+            const countdownVisibility = countdownVisibilitySelect.value;
+            const backgroundColor = backgroundColorInput.value;
+            const textColor = textColorInput.value;
+
+            document.getElementById('time').style.display = clockVisibility === 'visible' ? 'block' : 'none';
+            document.getElementById('date').style.display = clockVisibility === 'visible' ? 'block' : 'none';
+            document.getElementById('countdown').style.display = countdownVisibility === 'visible' ? 'block' : 'none';
+            document.body.style.backgroundColor = backgroundColor;
+            document.body.style.color = textColor;
+
+            hideAdminPanel();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isAdminLoggedIn');
+            isAdminLoggedIn = false;
+            document.getElementById('admin-login-button').style.display = 'block';
+            hideAdminPanel();
         }
 
         function showTime() {
@@ -504,6 +655,11 @@
             localStorage.setItem(ADMIN_PASSWORD_KEY, btoa(INITIAL_ADMIN_PASSWORD));
             savedAdminPassword = localStorage.getItem(ADMIN_PASSWORD_KEY);
             console.log("管理画面の初期パスワードを設定しました: 33125016"); // 確認用
+        }
+
+        // ページ読み込み時に管理者ログイン状態を確認
+        if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
+            document.getElementById('admin-login-button').style.display = 'none';
         }
     </script>
 </body>
