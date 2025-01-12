@@ -176,6 +176,49 @@
             background-color: #d68910;
         }
 
+        /* 管理画面ログインフォーム */
+        #admin-login-form {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        #admin-login-form-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #admin-login-form input[type="password"] {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 200px;
+        }
+
+        #admin-login-form button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #admin-login-form button.cancel-button {
+            background-color: #ccc;
+            margin-left: 10px;
+        }
+
         /* モバイル版対応 */
         @media screen and (max-width: 768px) {
             body {
@@ -251,6 +294,15 @@
                 font-size: 0.8em;
                 padding: 8px 12px;
             }
+
+             /* モバイル版での管理画面ログインフォーム */
+            #admin-login-form-content {
+                padding: 20px;
+            }
+
+            #admin-login-form input[type="password"] {
+                width: 150px;
+            }
         }
     </style>
 </head>
@@ -285,6 +337,16 @@
         </div>
     </div>
 
+    <div id="admin-login-form">
+        <div id="admin-login-form-content">
+            <h2>管理画面 ログイン</h2>
+            <input type="password" id="admin-password-input" placeholder="パスワードを入力">
+            <br>
+            <button onclick="loginAdmin()">ログイン</button>
+            <button class="cancel-button" onclick="hideAdminLoginForm()">キャンセル</button>
+        </div>
+    </div>
+
     <script>
         let isDebugMode = false;
         const debugOverlay = document.getElementById('debug-overlay');
@@ -297,6 +359,8 @@
         const PASSWORD_KEY = 'debugPassword';
         const ADMIN_PASSWORD_KEY = 'adminPassword'; // 管理画面用パスワードのキー
         const INITIAL_ADMIN_PASSWORD = '33125016'; // 初期管理画面パスワード
+        const adminLoginForm = document.getElementById('admin-login-form');
+        const adminPasswordInput = document.getElementById('admin-password-input');
 
         // 保存されたパスワードを読み込む
         let savedPassword = localStorage.getItem(PASSWORD_KEY);
@@ -304,14 +368,30 @@
 
         // 管理画面ログインボタンの処理
         document.getElementById('admin-login-button').addEventListener('click', function() {
-            const adminPassword = prompt("管理画面のパスワードを入力してください:");
+            showAdminLoginForm();
+        });
+
+        function showAdminLoginForm() {
+            adminLoginForm.style.display = 'flex';
+        }
+
+        function hideAdminLoginForm() {
+            adminLoginForm.style.display = 'none';
+            adminPasswordInput.value = ''; // 入力フィールドをクリア
+        }
+
+        function loginAdmin() {
+            const adminPassword = adminPasswordInput.value;
             if (adminPassword && btoa(adminPassword) === savedAdminPassword) {
                 alert("管理画面にログインしました！");
-                // ここに管理画面への遷移処理などを記述
-            } else if (adminPassword !== null) {
+                // 管理画面への遷移
+                window.location.href = '/admin'; // 実際の管理画面のURLに置き換えてください
+            } else if (adminPassword) {
                 alert("パスワードが間違っています。");
+            } else {
+                alert("パスワードを入力してください。");
             }
-        });
+        }
 
         function showTime() {
             var currentTime = new Date();
